@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Patient Signup</title>
+</head>
+<body>
+    <h1>Patient Signup</h1>
+    <form action="/patient/signup" method="POST">
+        <input type="text" name="patient_name" placeholder="Name" required />
+        <input type="email" name="patient_email" placeholder="Email" required />
+        <input type="number" name="patient_age" placeholder="Age" required />
+        <button type="submit" onclick="success()">Signup</button> 
+    </form>
+    <div id="message"></div>
+    <button id="login" style="display: none;">Go to Login</button>
+</body>
+<script>
+    function success() {
+        document.getElementById("message").innerText = "Password sent on registered email ID.";
+        document.getElementById("login").style.display = "block";
+        document.getElementById("login").innerText = "Go to Login";
+        document.getElementById("login").onclick = function() {
+            window.location.href = "/patient/login";
+        };
+    }
+</script>
+</html>

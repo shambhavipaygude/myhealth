@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Home</title>
+</head>
+<body>
+    <h1>Welcome Dr. <%= doctor_name %></h1>
+    <button onclick="redirectToChats()">Chats</button>
+    <button onclick="redirectToDocuments()">Documents</button>
+
+    <script>
+        
+        function redirectToChats() {
+            window.location.href = '/doctor/inbox';
+        }
+
+        function redirectToDocuments() {
+            window.location.href = '/doctor/documents';
+        }
+    </script>
+</body>
+</html>

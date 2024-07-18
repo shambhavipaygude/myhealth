@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Dr. <%= doctor.doctor_name %></title>
+    <style>
+        /* Basic styles for the chat container */
+        .chat-container {
+            width: 80%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+        .chat-header {
+            text-align: center;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        .chat-body {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            background-color: #fafafa;
+        }
+        .chat-footer {
+            display: flex;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        .chat-footer input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .chat-footer button {
+            padding: 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            margin-left: 10px;
+            border-radius: 4px;
+        }
+        .chat-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            max-width: 60%;
+        }
+        .sent {
+            align-self: flex-end;
+            background-color: #DCF8C6; /* Green background for sent messages */
+        }
+        .received {
+            align-self: flex-start;
+            background-color: #f0f0f0; /* Light gray background for received messages */
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Chat with Dr. <%= doctor.doctor_name %></h1>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <!-- Chat messages will be appended here -->
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="Type a message" onkeydown="if(event.key === 'Enter') sendMessage()">
+            <button onclick="sendMessage()">Send</button>
+            <input type="file" id="file-input" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+            <button onclick="chooseFile()">Attach Document</button>
+        </div>
+    </div>
+    <script>
+        let lastMessageTimestamp = null;
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (message === "") return;
+
+            // Append message to chat body (simulate message sent)
+            appendMessage(message, 'sent');
+
+            // Clear the input
+            input.value = '';
+
+            // Extract doctor_id from the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const doctor_id = urlParams.get('doctor_id');
+
+            // Fetch conversation ID based on doctor_id and patient_id
+            try {
+                const response = await fetch('/patient/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        doctor_id: doctor_id,
+                        message: message
+                    })
+                });
+
+                if (!response.ok) {
+                    console.error('Failed to fetch conversation ID');
+                    return;
+                }
+
+                const { convo_id } = await response.json();
+
+                // Send message to server with fetched convo_id
+                const messageResponse = await fetch('/patient/chat/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        convo_id,
+                        sender_type: 'patient',
+                        message
+                    })
+                });
+
+                if (!messageResponse.ok) {
+                    console.error('Failed to send message');
+                    return;
+                }
+
+                // Update last message timestamp
+                lastMessageTimestamp = new Date().toISOString();
+
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function appendMessage(text, type) {
+            const chatBody = document.getElementById('chat-body');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', type);
+
+            // Check if the message is a document
+            const isDocument = text.startsWith('Document: ');
+            if (isDocument) {
+                const documentName = text.substring(10); // Extract document name
+                const documentLink = text; // Assuming the message contains the document link
+                const linkElement = document.createElement('a');
+                linkElement.href = documentLink;
+                linkElement.textContent = documentName;
+                linkElement.target = '_blank'; // Open in a new tab
+                messageElement.appendChild(linkElement);
+            } else {
+                messageElement.innerText = text;
+            }
+
+            chatBody.appendChild(messageElement);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        async function loadMessages() {
+            try {
+                // Fetch messages from server
+                const response = await fetch(`/patient/chat/messages?convo_id=<%= convo_id %>`);
+                if (response.ok) {
+                    const messages = await response.json();
+                    messages.forEach(message => {
+                        appendMessage(message.message, message.sender_type === 'patient' ? 'sent' : 'received');
+                    });
+
+                    // Update last message timestamp
+                    if (messages.length > 0) {
+                        lastMessageTimestamp = new Date(messages[messages.length - 1].timestamp).toISOString();
+                    }
+                } else {
+                    console.error('Failed to load messages');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Load existing messages on page load
+        loadMessages();
+
+        // Poll for new messages every 5 seconds
+        setInterval(loadMessages, 2000);
+
+        function chooseFile() {
+            document.getElementById('file-input').click();
+        }
+
+        document.getElementById('file-input').addEventListener('change', handleFile);
+
+        function handleFile() {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+
+            // Check if a file is selected
+            if (file) {
+                // Display the file name in the chat input or handle file upload as per your requirement
+                const fileName = file.name;
+                const chatInput = document.getElementById('chat-input');
+                chatInput.value = `Document: ${fileName}`;
+            }
+        }
+    </script>
+</body>
+</html>

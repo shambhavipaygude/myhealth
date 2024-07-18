@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctors - <%= specialisation %></title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .doctor-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .doctor-table th, .doctor-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .doctor-table th {
+            background-color: #4c504c;
+            color: white;
+        }
+        .chat-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .chat-button:hover {
+            background-color: #45a049;
+        }
+        .no-doctors {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>Doctors - <%= specialisation %></h1>
+    <div class="doctor-list">
+        <% if (doctors && doctors.length > 0) { %>
+            <table class="doctor-table">
+                <thead>
+                    <tr>
+                        <th>Sr No</th>
+                        <th>Doctor Name</th>
+                        <th>Specialisation</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% doctors.forEach((doctor, index) => { %>
+                        <tr>
+                            <td><%= index + 1 %></td>
+                            <td>Dr. <%= doctor.doctor_name %></td>
+                            <td><%= doctor.specialisation %></td>
+                            <td><button class="chat-button" onclick="startChat('<%= doctor.doctor_id %>')">Chat Now</button></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p class="no-doctors">No doctors found for this specialization.</p>
+        <% } %>
+    </div>
+    <script>
+        function startChat(doctorId) {
+            window.location.href = `/patient/chat?doctor_id=${doctorId}`;
+        }
+    </script>
+</body>
+</html>

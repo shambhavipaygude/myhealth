@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Patient</title>
+    <style>
+        /* Basic styles for the chat container */
+        .chat-container {
+            width: 80%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+        .chat-header {
+            text-align: center;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        .chat-body {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            background-color: #fafafa;
+        }
+        .chat-footer {
+            display: flex;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        .chat-footer input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .chat-footer button {
+            padding: 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            margin-left: 10px;
+            border-radius: 4px;
+        }
+        .chat-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            max-width: 60%;
+        }
+        .sent {
+            align-self: flex-end;
+            background-color: #DCF8C6; /* Green background for sent messages */
+        }
+        .received {
+            align-self: flex-start;
+            background-color: #f0f0f0; /* Light gray background for received messages */
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Chat with Patient</h1>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <!-- Chat messages will be appended here -->
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="Type a message" onkeydown="if(event.key === 'Enter') sendMessage()">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    <script>
+        let lastMessageTimestamp = null;
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (message === "") return;
+
+            // Append message to chat body (simulate message sent)
+            appendMessage(message, 'sent');
+
+            // Clear the input
+            input.value = '';
+
+            // Extract convo_id from the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const patient_id = urlParams.get('patient_id');
+
+            try {
+                const response = await fetch('/doctor/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        patient_id: patient_id,
+                        message: message
+                    })
+                });
+
+                if (!response.ok) {
+                    console.error('Failed to send message');
+                    return;
+                }
+                const { convo_id } = await response.json();
+
+// Send message to server with fetched convo_id
+const messageResponse = await fetch('/doctor/chat/send', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        convo_id,
+        sender_type: 'doctor',
+        message
+    })
+});
+
+if (!messageResponse.ok) {
+    console.error('Failed to send message');
+    return;
+}
+lastMessageTimestamp = new Date().toISOString();
+} catch (error) {
+console.error('Error:', error);
+}
+
+}
+
+        function appendMessage(text, type) {
+            const chatBody = document.getElementById('chat-body');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', type);
+            messageElement.innerText = text;
+            chatBody.appendChild(messageElement);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        // Function to load existing chat messages
+        async function loadMessages() {
+            try {
+                const response = await fetch(`/doctor/chat/messages?convo_id=<%= convo_id %>`);
+                if (response.ok) {
+                    const messages = await response.json();
+                    messages.forEach(message => {
+                        const messageType = message.sender_type === 'doctor' ? 'sent' : 'received';
+                        appendMessage(message.message, messageType);
+                    });
+
+                    if (messages.length > 0) {
+                        lastMessageTimestamp = new Date(messages[messages.length - 1].timestamp).toISOString();
+                    }
+
+                } else {
+                    console.error('Failed to load messages');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Load existing messages on page load
+        loadMessages();
+        setInterval(loadMessages, 2000);
+    </script>
+</body>
+</html>

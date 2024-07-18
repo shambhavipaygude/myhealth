@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Inbox</title>
+    <style>
+        /* Add your CSS styles here */
+        .inbox-container {
+            width: 80%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+        .inbox-header {
+            text-align: center;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        .inbox-body {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            background-color: #fafafa;
+        }
+        .inbox-item {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="inbox-container">
+        <div class="inbox-header">
+            <h1>Doctor Inbox</h1>
+        </div>
+        <div class="inbox-body" id="inbox-body">
+            <% formattedConversations.forEach(convo => { %>
+                <div class="inbox-item" onclick="loadChat('<%= convo.patient_id %>')">
+                    <%= convo.patient_name %>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+
+    <script>
+        function loadChat(patient_id) {
+            window.location.href = `/doctor/chat?patient_id=${patient_id}`;
+        }
+    </script>
+</body>
+</html>
+

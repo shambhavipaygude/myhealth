@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .chat-container {
+            width: 400px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background-color: #075E54;
+            color: #fff;
+            text-align: center;
+        }
+
+        .chat-body {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #e5ddd5;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 80%;
+        }
+
+        .chat-message.sent {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+        }
+
+        .chat-message.received {
+            background-color: #fff;
+            align-self: flex-start;
+        }
+
+        .chat-footer {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-footer input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .chat-footer button {
+            padding: 10px;
+            background-color: #075E54;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .chat-footer button:hover {
+            background-color: #064e44;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>Chat App</h2>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <% if (messages && messages.length > 0) { %>
+                <% messages.forEach(message => { %>
+                    <div class="chat-message <%= message.user_type === 'patient' ? 'sent' : 'received' %>">
+                        <%= message.text %>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p>No messages yet.</p>
+            <% } %>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="text_message" name="text_message" placeholder="Type a message" onkeydown="if(event.key === 'Enter') sendMessage()">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById('text_message');
+            const message = input.value.trim();
+            console.log("message: ",message)
+            if (message === "") return;
+
+            const response = await fetch('/patient/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: message, user_type: 'patient' }) // Hardcoded as 'patient' for this example
+            });
+
+            if (response.ok) {
+                const newMessage = await response.json();
+                const chatBody = document.getElementById('chat-body');
+
+                // Create a new message element
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('chat-message', 'sent');
+                messageElement.innerText = newMessage.text;
+
+                // Append the message to the chat body
+                chatBody.appendChild(messageElement);
+
+                // Clear the input
+                input.value = '';
+
+                // Scroll to the bottom
+                chatBody.scrollTop = chatBody.scrollHeight;
+            } else {
+                console.error('Failed to send message');
+            }
+        }
+
+        async function fetchMessages() {
+            const response = await fetch('/patient/chat');
+            if (response.ok) {
+                const messages = await response.json();
+                const chatBody = document.getElementById('chat-body');
+                chatBody.innerHTML = '';
+
+                messages.forEach(message => {
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('chat-message', message.user_type === 'patient' ? 'sent' : 'received');
+                    messageElement.innerText = message.text;
+                    chatBody.appendChild(messageElement);
+                });
+
+                chatBody.scrollTop = chatBody.scrollHeight;
+            } else {
+                console.error('Failed to fetch messages');
+            }
+        }
+
+        // Fetch messages on page load
+        fetchMessages();
+    </script>
+</body>
+</html>

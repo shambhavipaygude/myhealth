@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Doctor Signup</title>
+</head>
+<body>
+    <h1>Doctor Signup</h1>
+    <form action="/doctor/signup" method="POST">
+        <input type="text" name="doctor_name" placeholder="Name" required />
+        <input type="email" name="doctor_email" placeholder="Email" required />
+        <select name="specialisation" placeholder="Specialisation" required>
+            <option>Dermatologist</option>
+            <option>Opthamologist</option>
+            <option>Cardiologist</option>
+        </select>
+        <button type="submit" onclick="success()">Signup</button> 
+    </form>
+    <div id="message"></div>
+    <button id="login" style="display: none;">Go to Login</button>
+</body>
+<script>
+    function success() {
+        document.getElementById("message").innerText = "Password sent on registered email ID.";
+        document.getElementById("login").style.display = "block";
+        document.getElementById("login").innerText = "Go to Login";
+        document.getElementById("login").onclick = function() {
+            window.location.href = "/doctor/login";
+        };
+    }
+</script>
+</html>

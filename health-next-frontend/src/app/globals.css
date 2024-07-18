@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap');
+
+body {
+  @apply font-sans;
+}
+
+/* Keyframes for the glowing effect */
+@keyframes glowing {
+    0% {
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.2), 0 0 10px rgba(255, 255, 255, 0.2), 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(43, 9, 100, 0.4), 0 0 30px rgba(103, 98, 130, 0.4), 0 0 40px rgba(255, 255, 255, 0.4);
+    }
+    100% {
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.2), 0 0 10px rgba(255, 255, 255, 0.2), 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+  }
+  
+  /* Apply the animation to the button */
+  .glowing-button {
+    animation: glowing 2s infinite;
+    border-radius: 0.375rem; /* Matching rounded-md */
+    background-color: #0c152d; /* Matching bg-customblue */
+    padding-left: 0.75rem; /* Matching px-3 */
+    padding-right: 0.75rem; /* Matching px-3 */
+    padding-top: 0.5rem; /* Matching py-2 */
+    padding-bottom: 0.5rem; /* Matching py-2 */
+    font-size: 0.875rem; /* Matching text-sm */
+    font-weight: 600; /* Matching font-semibold */
+    color: #ffffff; /* Matching text-white */
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2), 0 0 10px rgba(255, 255, 255, 0.2), 0 0 15px rgba(255, 255, 255, 0.2);
+  }
+  
+  .glowing-button:hover {
+    background-color: rgba(0, 0, 0, 0.8); /* Matching hover:bg-black/80 */
+  }
+  
+  .glowing-button:focus-visible {
+    outline: 2px solid black; /* Matching focus-visible:outline-black */
+    outline-offset: 2px; /* Matching focus-visible:outline-offset-2 */
+  }

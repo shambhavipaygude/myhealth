@@ -179,32 +179,6 @@ module.exports.doctorLogin_post = async (req, res) => {
     }
 };
 
-// module.exports.patientLogin_post = async (req, res) => {
-//     const { email, password } = req.body;
-//     try {
-//         // Log the email and password received in the request
-//         console.log("Login attempt with email:", email);
-
-//         const patient = await Patient.findOne({ where: { patient_email: email, patient_password: password } });
-
-//         if (patient) {
-//             // Log successful login
-//             console.log("Login successful for email:", email);
-//             //req.session.email = email;
-//             req.session.patient_name = patient.patient_name;
-//             res.status(200).json({ patient });
-//         } else {
-//             // Log unsuccessful login attempt
-//             console.log("Login failed for email:", email);
-//             res.status(400).json({ error: "Email or password incorrect" });
-//         }
-//     } catch (err) {
-//         // Log the error details
-//         console.error("Error during login attempt:", err);
-//         res.status(500).json({ error: "Something went wrong" });
-//     }
-// };
-
 module.exports.patientChat_get = async (req, res) => {
     try {
         const messages = await Conversation.findAll({
@@ -242,29 +216,6 @@ module.exports.getDoctorsBySpecialisation = async (req, res) => {
         res.status(500).json({ error: 'Something went wrong' });
     }
 };
-
-// module.exports.getChatPage = async (req, res) => {
-//     const { doctor_id, patient_id, convo_id } = req.query;
-//     try {
-//         const doctor = await Doctor.findByPk(doctor_id);
-//         if (!doctor) {
-//             return res.status(404).send('Doctor not found');
-//         }
-
-//         let newConvoId = convo_id; // Initialize with existing convo_id
-
-//         // If convo_id is empty, create a new conversation
-//         if (!newConvoId) {
-//             const newConversation = await Conversation.create({ doctor_id, patient_id });
-//             newConvoId = newConversation.convo_id;
-//         }
-
-//         res.render('chatPage', { doctor, convo_id: newConvoId });
-//     } catch (err) {
-//         console.error('Error fetching doctor or creating conversation:', err);
-//         res.status(500).send('Something went wrong');
-//     }
-// };
 
 module.exports.storeMessages = async (req, res) => {
     const { doctor_id, patient_id } = req.query;
@@ -403,33 +354,9 @@ module.exports.getChatPage = async (req, res) => {
     }
 };
 
-
-// module.exports.getChatPage_doctor = async (req, res) => {
-//     const doctor_id = req.session.doctor_id;
-
-//     try {
-//         const conversations = await Conversation.findAll({
-//             where: { doctor_id },
-//             include: [{ model: Patient, attributes: ['patient_id', 'patient_name'] }]
-//         });
-
-//         const formattedConversations = conversations.map(convo => ({
-//             patient_id: convo.patient_id,
-//             patient_name: convo.Patient.patient_name
-//         }));
-
-//         res.render('chatPage_doctor', { formattedConversations, convo_id});
-//     } catch (err) {
-//         console.error('Error fetching inbox messages:', err);
-//         res.status(500).send('Something went wrong');
-//     }
-// };
-
-
 module.exports.getConversationId = async (req, res) => {
     const { doctor_id } = req.body;
     const patient_id = req.session.patient_id;
-    
 
     try {
         const conversation = await Conversation.findOne({ 
@@ -477,31 +404,6 @@ module.exports.getConversationId_doc = async (req, res) => {
         res.status(500).json({ error: 'Something went wrong' });
     }
 };
-
-// module.exports.getDoctorInbox = async (req, res) => {
-//     const doctor_id = req.session.doctor_id;
-
-//     if (!doctor_id) {
-//         return res.redirect('/doctor/login');
-//     }
-
-//     try {
-//         // Fetch conversations and include patient details
-//         const conversations = await Conversation.findAll({
-//             where: { doctor_id },
-//             include: [{
-//                 model: Patient,
-//                 attributes: ['patient_id', 'patient_name']
-//             }]
-//         });
-
-//         res.render('doctorInbox', { conversations });
-//     } catch (err) {
-//         console.error('Error fetching conversations:', err);
-//         res.status(500).send('Something went wrong');
-//     }
-// };
-
 
 module.exports.getDoctorInbox = async (req, res) => {
     const doctor_id = req.session.doctor_id;
